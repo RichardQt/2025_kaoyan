@@ -1,0 +1,375 @@
+#include <stdio.h>
+#include<stdlib.h>
+#include<queue>
+#include<iostream>
+#include<stack>
+using namespace std;
+typedef struct tree
+{
+    int data;
+    struct tree * left;
+    struct tree * right;
+
+}Tree;
+// 1 递归的先序遍历
+void Preorder(Tree *T)
+{
+    if(!T) return;
+    printf("当前节点的值是%d\n",T->data);
+    Preorder(T->left);
+    Preorder(T->right);
+}
+//递归的中序遍历
+void InOrder(Tree* T)
+{
+    if(!T) return;
+    InOrder(T->left);
+    printf("中序遍历当前节点的值 %d\n",T->data);
+    InOrder(T->right);
+}
+// 递归的后序遍历
+void PostOrder(Tree*T)
+{
+    if(!T)  return;
+    PostOrder(T->left);
+    PostOrder(T->right);
+    printf("后序遍历: 当前节点值%d\n",T->data);
+}
+//王道 3  P149
+void PostOrder2(Tree *T) //非递归版本
+{
+    if(!T) return;//数空  宽度为0
+    stack<Tree*> Stack1;
+    stack<Tree*> Stack2;
+    Stack1.push(T);
+    while(!Stack1.empty())
+    {
+        Tree *curr=Stack1.top();
+        Stack1.pop();
+        Stack2.push(curr);
+        if(curr->left) Stack1.push(curr->left);
+        if(curr->right) Stack1.push(curr->right);
+    }
+    while(!Stack2.empty())
+    {
+        Tree* curr = Stack2.top();
+        Stack2.pop();
+        // 输出节点的值或进行其他操作
+        cout << curr->data << " "<<endl;;
+
+    }
+    return ;
+}
+// P149  04  王道
+void InverLevel(Tree *T)
+{
+    if(!T) return;//树空返回
+    queue<Tree*> q;
+    q.push(T);
+    Tree *p=NULL;
+    stack<Tree*> Stack;
+    while(!q.empty())
+    {
+        p=q.front();
+        Stack.push(p);
+        q.pop();
+        if(p->left)
+        {
+            q.push(p->left);
+        }
+        if(p->right)
+        {
+            q.push(p->right);
+        }
+    }
+    cout<<"倒序输出:"<<endl;
+    while(!Stack.empty())
+    {
+        Tree* curr=Stack.top();
+        Stack.pop();
+        cout<<curr->data<<endl;
+    }
+    return ;
+}
+//递归的创建二叉排序树  
+void insertNode(Tree* root, int value) {
+    if (value < root->data) {
+        if (root->left == NULL) {
+            Tree* newNode = (Tree*)malloc(sizeof(Tree));
+            newNode->data = value;
+            newNode->left = NULL;
+            newNode->right = NULL;
+            root->left = newNode;
+        } else {
+            insertNode(root->left, value);
+        }
+    } else if (value > root->data) {
+        if (root->right == NULL) {
+            Tree* newNode = (Tree*)malloc(sizeof(Tree));
+            newNode->data = value;
+            newNode->left = NULL;
+            newNode->right = NULL;
+            root->right = newNode;
+        } else {
+            insertNode(root->right, value);
+        }
+    }
+}
+//海事 2012 真题
+Tree* buildTree(int* arr, int size, int index) {
+    if (index >= size || arr[index] == -1) {
+        return NULL;
+    }
+
+    Tree* root = (Tree*)malloc(sizeof(Tree));
+    root->data = arr[index];
+    root->left = buildTree(arr, size, 2*index + 1);
+    root->right = buildTree(arr, size, 2*index + 2);
+
+    return root;
+}
+//前序遍历的第N个节点  P149 10  
+int k=0;
+void find(Tree *T)
+{
+    if(!T) return;
+    ++k;
+    if(k==5)
+    {
+        printf("k=%d\n",T->data);
+    }
+    find(T->left);
+    find(T->right);
+}
+//这个与上面buildTree 区别是这个给你的数组是从1开始  上面从0 开始
+Tree* buildBST(int arr[],int start,int end)
+{
+    if(start>end) return NULL;
+    int mid=(start+end)/2;
+    Tree*root=(Tree*)malloc(sizeof(Tree));
+    root->data=arr[mid];
+    root->left=buildBST(arr,start,mid-1);
+    root->right=buildBST(arr,mid+1,end);
+
+    return root;
+}
+//求树的高度 P149 05  王道 
+int TreeHignt(Tree * T)
+{
+    if(!T) return 0;//如果树为空  返回0  高度为1
+    int left=TreeHignt(T->left);
+    int right=TreeHignt(T->right);
+    return 1+(left>right?left:right);
+}
+//交换左右子树  王道 P149 09
+void swapTree(Tree *T)
+{
+    if(!T) return;
+    swapTree(T->left);
+    swapTree(T->right);
+    Tree *tmp=T->left;
+    T->left = T->right;
+    T->right=tmp;
+}
+//叶节点的个数   改变if 条件可以分别求 度为2的节点  和度为1的节点
+//对应王道 P149 08
+static int count=0;
+int ChildCount(Tree *T)
+{
+    if(T)
+    {
+        if(T->left!=NULL&&T->right!=NULL) 
+            count++;//这样去实现的时候需要一个静态的全局变量  
+        ChildCount(T->left);
+        ChildCount(T->right);
+    }
+    return 0;
+}
+// 求一颗二叉树的宽度  P150 14
+int  WidthTree(Tree *root)
+{
+    if(!root) return 0;//数空  宽度为0 
+    queue<Tree*> Queue;
+    Queue.push(root);
+    stack<Tree*> Stack;
+    int maxWidth=0;
+   // int level=1;
+    while(!Queue.empty())
+    {
+        int size=Queue.size();
+        if(size>maxWidth) 
+        {
+            maxWidth=size;          
+        }
+        for (int i=0;i<size;i++)
+        {
+            Tree *curr=Queue.front();
+            Queue.pop();//出队
+            //cout<<"当前节点的值"<<curr->data<<"层数"<<level;
+            if(curr->left) Queue.push(curr->left);
+            if(curr->right) Queue.push(curr->right);
+        }
+        //level++;
+    }
+    return maxWidth;
+}
+//P150 12  打印值为X的节点及其所有祖先节点
+void printAncestors(Tree* root, int x) {
+    if (root == nullptr)
+        return;
+    queue<Tree*> q;
+    q.push(root);
+
+    // 存放所有节点的数组，初始时根节点下标为0
+    vector<int> Array;
+
+    // Array.push_back(-1);//占位符
+    Array.push_back(root->data);
+    while (!q.empty()) {
+        Tree* current = q.front();
+        q.pop();
+
+        if (current->left) 
+        {
+            q.push(current->left);
+            Array.push_back(current->left->data);
+        }
+        else 
+        {
+            Array.push_back(-1);
+        }
+
+        if (current->right) 
+        {
+            q.push(current->right);
+            Array.push_back(current->right->data);
+        } else 
+        {
+            Array.push_back(-1);
+        }
+    }
+
+    // 查找值为X的节点在数组中的位置
+    int xIndex = -1;
+    for (int i = 0; i < Array.size(); i++) {
+        if (Array[i] == x) {
+            xIndex = i;
+            break;
+        }
+    }
+    // 从xIndex开始往前遍历数组，并打印节点值
+    while(1)
+    {
+        cout << Array[xIndex] << " ";
+        if(xIndex==0)  break;
+        xIndex=(xIndex-1)/2;
+    }
+}
+// P150 16  求叶子结点连成的链表
+Tree* LinkList_Iorder(Tree *T)
+{
+    Tree *head;
+    Tree* pre=NULL;
+    if(T)
+    {
+        LinkList_Iorder(T->left);
+        if(T->left==NULL&&T->right==NULL)
+        {
+            if(!pre)
+            {
+                head=T;
+                pre=T;
+            }
+            else
+            {
+                pre->right=T;
+                pre=T;
+            }
+        }
+        LinkList_Iorder(T->right);
+        pre->right=NULL;
+    }
+    return head;
+}
+// 树的层次遍历 P142  5例题
+void LevelTree(Tree * T)
+{
+    if(!T) return;//树空返回
+
+    queue<Tree*> q;
+    q.push(T);
+    Tree *p=NULL;
+    while(!q.empty())
+    {
+        p=q.front();
+        std::cout<<p->data<<std::endl;
+        q.pop();
+        if(p->left!=NULL)
+        {
+            q.push(p->left);
+        }
+        if(p->right!=NULL)
+        {
+            q.push(p->right);
+        }
+    }
+}
+bool Compair(Tree*root1,Tree*root2)
+{
+    if(!root1&&!root2) return true;
+    if(!root1||!root2 ||root1->data!=root2->data)  return false;
+    bool l= Compair(root1->left,root2->left);
+    bool r= Compair(root1->right,root2->right);
+    return l&r;
+}
+//**********************以上属于王道还有leetcode的部分 ****************
+//**********************以下是真题***********************
+//2011 年 参考上面中序遍历的递归代码 不用动一模一样
+//2012 年 参考上面118 行  buildTree
+//2013 年 参考上面求度为0的递归代码  177行(卷一)  交换左右子树的参考上述swapTree 卷二
+//2014 年 参考上面求最大宽度注释的 部分 
+//2015 年 参考上面度为0的递归代码
+//2016 年 参考上面求最大宽度  传参多个参数的区别
+//2017 年 这个很简单  层次遍历的代码加一个level 变量  
+//2018 年  参考2013 年
+//2019 年 参考2015  2013年
+//2020 年 层次遍历的基础上如果没有左右子树数组插入-1 代表节点为空  参考树的最大宽度里面入队的代码
+//2021 年 
+//2022 年 三种递归都可以  每次遍历节点加上去就可以了 
+//2023 年 交换左右子树 参考上面代码 
+
+//测试
+int main()
+{  
+    /* Tree tree; */
+    /* tree.data = 4; */
+    /* tree.left = NULL; */
+    /* tree.right = NULL; */
+
+    /* insertNode(&tree, 2); */
+    /* insertNode(&tree, 6); */
+    /* insertNode(&tree, 3); */
+    /* insertNode(&tree, 1); */
+    /* insertNode(&tree, 5); */
+    /* Preorder(&tree); */
+    int arr[] = {1, 2, 3, 4, 5, 6, -1, -1, -1, 7 ,8};
+    int size = sizeof(arr) / sizeof(arr[0]);
+    // printf("%ld\n",sizeof(arr));
+    // int arr1[]={1,3,2,-1,6,4,5,-1,-1,-1,-1,8,7};
+    // int size1=sizeof(arr1)/sizeof(arr1[0]);
+    //Tree* root1=buildTree(arr1,size1,0);
+    // LevelTree(root1);
+    Tree* root = buildTree(arr, size, 0);
+    // InverLevel(root);
+    printAncestors(root,8);
+
+    // swapTree(root);
+    // Preorder(root);
+    // find(root);
+    //  LevelTree(root);
+    //  Compair(root,root1);
+    // printf("%d\n",ChildCount(root));
+    // printf("%d\n",TreeHignt(root));
+
+    return 0;
+}
